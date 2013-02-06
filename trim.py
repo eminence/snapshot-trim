@@ -5,6 +5,7 @@ import re
 import time
 from collections import namedtuple
 import time
+import sys
 
 dataset = "storage/home/achin"
 
@@ -72,6 +73,13 @@ def get_nearest_snap(ts):
 for x in list(range(oldest_snap, now, 3600)) + [now]:
     target = target_density(x)
     actual = get_density(x, period=(1/target)*3*3600)[1]
-    print ("%s: target:%f  actual:%f" % (time.asctime(time.localtime(x)), target, actual))
+    print ("%s: target:%f  actual:%f  period:%f" % (time.asctime(time.localtime(x)), target, actual, (1/target)*3*3600))
     if actual > target and now - x > 129600:
-        print (time.strftime("%Y%m%d-%H%M", time.localtime(get_nearest_snap(x))))
+        snap = time.strftime("%Y%m%d-%H%M", time.localtime(get_nearest_snap(x)))
+        snap_to_delete = "%s@%s" % (dataset, snap)
+        if "-oneshot" in sys.argv:
+            print("Destroying %s" % snap_to_delete)
+            p = subprocess.Popen(["/sbin/zfs", "destroy", snap_to_delete])
+            sys.exit(p.wait())
+        else:
+            print(snap_to_delete)
