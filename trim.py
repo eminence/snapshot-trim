@@ -35,6 +35,8 @@ def get_num_snapshots(snaps, start, end):
 snaps = list(get_snapshots(dataset))
 now = int(time.time())
 
+oldest_snap = int(min(snaps))
+
 Density = namedtuple('Density', ['snaps_per_period', 'snaps_per_hour', 'hours_per_snap'])
 def get_density(start, period=604800):
     snaps_this_week = get_num_snapshots(snaps, start - period, start)
@@ -67,7 +69,7 @@ def get_nearest_snap(ts):
             best = snap
     return int(best)
 
-for x in list(range(now - int(2.592e+6), now, 3600)) + [now]:
+for x in list(range(oldest_snap, now, 3600)) + [now]:
     target = target_density(x)
     actual = get_density(x, period=(1/target)*3*3600)[1]
     print ("%s: target:%f  actual:%f" % (time.asctime(time.localtime(x)), target, actual))
